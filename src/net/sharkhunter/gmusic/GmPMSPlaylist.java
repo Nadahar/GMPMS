@@ -1,26 +1,24 @@
 package net.sharkhunter.gmusic;
 
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.InputStream;
-
-import net.pms.PMS;
+import org.slf4j.LoggerFactory;
 import net.pms.dlna.virtual.VirtualFolder;
 
 
 public class GmPMSPlaylist extends VirtualFolder {
+	private static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(GmPMSPlaylist.class);
 	private GmPlaylist playlist;
 	private boolean useFile;
 	/*private GmAlbum album;
 	private GmArtist artist;*/
-	
+
 	public GmPMSPlaylist(GmPlaylist playlist) {
 		this(playlist,false);
 	}
-	
+
 	public GmPMSPlaylist(GmPlaylist playlist,boolean useFile) {
 		super(playlist.getName(),null);
 		this.playlist=playlist;
@@ -28,7 +26,7 @@ public class GmPMSPlaylist extends VirtualFolder {
 		/*album=null;
 		artist=null;*/
 	}
-	
+
 /*	public GmPMSPlaylist(GsAlbum a) {
 		super(a.getAlbum(),null);
 		playlist=null;
@@ -36,7 +34,7 @@ public class GmPMSPlaylist extends VirtualFolder {
 		album=a;
 		artist=null;
 	}
-	
+
 	public GmPMSPlaylist(GsArtist a) {
 		super(a.getArtist(),null);
 		playlist=null;
@@ -44,7 +42,7 @@ public class GmPMSPlaylist extends VirtualFolder {
 		album=null;
 		artist=a;
 	}*/
-	
+
 	public String getName() {
 		/*if(album!=null)
 			return album.getAlbum();
@@ -52,11 +50,11 @@ public class GmPMSPlaylist extends VirtualFolder {
 			return artist.getArtist();*/
 		return playlist.getName();
 	}
-	
+
 	public String getSystemName() {
 		return getName();
 	}
-	
+
 	private void savePlaylist(GmSong[] song,File f) {
 		try {
 			BufferedWriter wr=new BufferedWriter(new FileWriter(f));
@@ -70,11 +68,11 @@ public class GmPMSPlaylist extends VirtualFolder {
 			wr.close();
 		}
 		catch (Exception e) {
-			PMS.debug("error writing playlist "+e);
+			LOGGER.debug("{GMusic} Error writing playlist: {}", e);
 			return;
 		}
 	}
-	
+
 	/*private GmSong[] readFile(File f) {
 		if(!f.exists())
 			return null;
@@ -108,7 +106,7 @@ public class GmPMSPlaylist extends VirtualFolder {
 			return null;
 		}
 	}*/
-	
+
 	private void aDisc(GmSong[] songs) {
 		int j=0;
 		for(int i=0;i<songs.length;i++) {
@@ -120,14 +118,14 @@ public class GmPMSPlaylist extends VirtualFolder {
 				continue;
 			j++;
 			addChild(new GmPMSSong(songs[i]));
-		}	
+		}
 	}
-	
+
 	public void discoverChildren()  {
 		GmSong[] songs=null;
-		/*if(album!=null) 
+		/*if(album!=null)
 			songs=album.getSongs();
-		if(artist!=null) 
+		if(artist!=null)
 			songs=artist.getSongs();*/
 		if(playlist!=null) {
 			File f=new File(playlist.saveFile());
@@ -141,15 +139,15 @@ public class GmPMSPlaylist extends VirtualFolder {
 		if(songs!=null)
 			aDisc(songs);
 	}
-	
+
 	public boolean isSearched() {
 		return true;
 	}
-	
+
 	public InputStream getThumbnailInputStream()  {
 		if(playlist!=null)
 			return super.getThumbnailInputStream();
-		String url="";			
+		String url="";
 		/*if(album!=null)
 			url=album.getCoverURL();
 		if(artist!=null)
@@ -163,5 +161,5 @@ public class GmPMSPlaylist extends VirtualFolder {
 			return super.getThumbnailInputStream();
 		}
 	}
-	
+
 }

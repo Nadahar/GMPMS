@@ -3,12 +3,8 @@ package net.sharkhunter.gmusic;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import javax.net.ssl.HttpsURLConnection;
-
 
 import org.apache.commons.lang.StringUtils;
 
@@ -26,17 +22,17 @@ public class GmSong implements Runnable,Comparable<Object> {
 	private String coverURL;
 	private String plays;
 	private int trackNo;
-	
+
 	// Internals
 	private String streamURL;
 	private OutputStream[] outStream;
 	private InputStream inStream;
-	
+
 	private Gm parent;
 	private boolean streamFetched;
 	private long length;
-	
-	
+
+
 	public GmSong(String parseData,Gm parent) {
 		this.Ok=false;
 
@@ -61,14 +57,14 @@ public class GmSong implements Runnable,Comparable<Object> {
 		this.parent=parent;
 		this.streamFetched=false;
 		this.length=0;
-		this.Ok=true;		
+		this.Ok=true;
 	}
-	
+
 	public String toString() {
 		return "Song: "+this.name+" Album: "+this.album+" Artist: "+this.artist+
 		       " SongId: "+this.id+" trackNum "+this.trackNo;
 	}
-	
+
 	public void fetchStreamData() {
 		if(this.streamFetched) // No need to fetch it twice
 			return;
@@ -82,7 +78,7 @@ public class GmSong implements Runnable,Comparable<Object> {
 		streamURL=kv[1].replaceAll("\\}", "").trim();
 		streamFetched=true;
 	}
-	
+
 	public static GmSong[] parseSongs(String data,Gm parent) {
 		int size=0;
 		int pos=0;
@@ -116,23 +112,23 @@ public class GmSong implements Runnable,Comparable<Object> {
 		}
 		return res;
 	}
-	
+
 	public final void run() {
 		retriveData(this.outStream,this.inStream);
 	}
-	
+
 	private void retriveData(OutputStream[] os,InputStream is) {
 		try {
-			//Get Response	
+			//Get Response
 			byte[] buf=new byte[1];
 			for(;;) {
 				if(is.read(buf,0,1)==-1)
 					break;
-				for(int i=0;i<os.length;i++) 
+				for(int i=0;i<os.length;i++)
 					os[i].write(buf,0,1);
-			}	
+			}
 			for(int i=0;i<os.length;i++) {
-				os[i].flush();	
+				os[i].flush();
 				os[i].close();
 			}
 			is.close();
@@ -142,19 +138,19 @@ public class GmSong implements Runnable,Comparable<Object> {
 			return ;
 		}
    }
-	
+
 	public void download() {
 		download(this.fileName(),false);
 	}
-	
+
 	public void download(boolean spawn) {
 		download(this.fileName(),spawn);
 	}
-	
+
 	public void download(String file) {
 		download(file,false);
 	}
-	
+
 	public void download(String file,boolean spawn) {
 		try {
 			FileOutputStream out=new FileOutputStream(file);
@@ -164,21 +160,21 @@ public class GmSong implements Runnable,Comparable<Object> {
 			return ;
 		}
 	}
-	
+
 	public void download(OutputStream out) {
 		download(out,false);
 	}
-	
+
 	public void download(OutputStream[] out) {
 		download(out,false);
 	}
-	
+
 	public void download(OutputStream out,boolean spawn) {
 		OutputStream[] os=new OutputStream[1];
 		os[0]=out;
 		download(os,spawn);
 	}
-	
+
 	public void download(OutputStream[] out,boolean spawn) {
 		if(!this.Ok)
 			return;
@@ -207,75 +203,75 @@ public class GmSong implements Runnable,Comparable<Object> {
 		else
 			retriveData(out,inStream);
 	}
-	
+
 	public String streamURL() {
 		return streamURL;
 	}
-	
+
 	public String getName() {
 		return name.trim();
 	}
-	
+
 	public String fileName() {
 		String noSlashU=getName().replace("\\u", "_");
 		return this.parent.savePath+File.separator+noSlashU+".mp3";
 	}
-	
-	
+
+
 	public String getAlbum() {
 		return this.album;
 	}
-	
+
 	public String getAlbumId() {
 		return this.albumId;
 	}
-	
+
 	public String getArtist() {
-		return this.artist;	
+		return this.artist;
 	}
-	
+
 	public String getArtistId() {
 		return this.artistId;
 	}
-	
+
 	public String getId() {
 		return id;
 	}
-	
+
 	public boolean save() {
 		return parent.saveSong();
 	}
-	
+
 	public void setId(String id) {
 		this.id=id;
 	}
-	
+
 	public long getLength() {
 		return length;
 	}
-	
+
 	public String savePath() {
 		return parent.savePath;
 	}
-	
+
 	public int delay() {
 		return parent.delay;
 	}
-	
+
 	public String getCoverURL() {
 		return parent.cover(coverURL);
 	}
-	
+
 	public int trackNum(){
 		return trackNo;
 	}
-	
+
 	public void setTrack(int t) {
 		trackNo=t;
 	}
-	
+
 	// Compare function
-	
+
 	public int compareTo(Object o) {
 		GmSong s=(GmSong)o;
 		if(this.trackNo>s.trackNo)
@@ -287,5 +283,5 @@ public class GmSong implements Runnable,Comparable<Object> {
 		}
 		throw new ClassCastException();
 	}
-	
+
 }

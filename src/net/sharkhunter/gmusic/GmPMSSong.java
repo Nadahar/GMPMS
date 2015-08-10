@@ -2,13 +2,12 @@ package net.sharkhunter.gmusic;
 
 import java.io.*;
 import java.util.ArrayList;
-
+import org.slf4j.LoggerFactory;
 import net.pms.dlna.*;
-import net.pms.PMS;
- 
 
 public class GmPMSSong extends DLNAResource{
-	
+
+	private static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(GmPMSSong.class);
 	private GmSong song;
 	private boolean downloading;
 	private ByteArrayOutputStream out;
@@ -29,32 +28,31 @@ public class GmPMSSong extends DLNAResource{
 			setMedia(m);
 		}
 	}
-	
+
 	@Override
 	public String getName() {
 		return this.song.getName();
 	}
-	
+
 	@Override
 	public String getSystemName() {
 		return getName()+".mp3";
 	}
-	
+
 	public boolean isUnderlyingSeekSupported() {
 		return true;
 	}
-	
+
 	@Override
 	public void resolve() {
 	}
-	
+
 	@Override
 	public boolean isValid() {
-		checktype();
+		resolveFormat();;
 		return true;
-		
 	}
-	
+
 	@Override
 	public long length() {
 		return DLNAMediaInfo.TRANS_SIZE;
@@ -64,11 +62,11 @@ public class GmPMSSong extends DLNAResource{
 	public boolean isFolder() {
           return false;
     }
-	
+
 	public boolean isSearched() {
 		return true;
 	}
-	
+
 	@Override
 	public InputStream getInputStream() {
 		try {
@@ -87,22 +85,22 @@ public class GmPMSSong extends DLNAResource{
 					this.song.download(this.out,spawn);
 				}
 			}
-			
+
 			if(spawn)
 				Thread.sleep(song.delay());
 			return new GmByteInputStream(out,(int)song.getLength());
 			//return Gs.cache.getInputStream(song.getId());
 		}
 		catch (Exception e) {
-			PMS.debug("GSPMSSong exception occured "+e.toString());
+			LOGGER.debug("{GMusic} Song exception occurred: ", e);
 			return null;
 		}
 	}
-	
+
 	public InputStream getThumbnailInputStream() {
 		String url=song.getCoverURL();
 		try {
-			if(url.length()==0) 
+			if(url.length()==0)
 				return super.getThumbnailInputStream();
 			byte[] b=downloadAndSendBinary(url);
 			return new ByteArrayInputStream(b);
@@ -114,7 +112,7 @@ public class GmPMSSong extends DLNAResource{
 			catch (Exception e1) {
 				return null;
 			}
-		}	
-		
+		}
+
 	}
 }

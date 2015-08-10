@@ -1,40 +1,33 @@
 package net.sharkhunter.gmusic;
 
 import java.util.List;
-import java.util.Random;
-import java.util.UUID;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.security.*;
 import java.net.*;
 import java.io.*;
-
 import javax.net.ssl.HttpsURLConnection;
-
-import net.pms.PMS;
-
+import org.slf4j.LoggerFactory;
 import java.math.*;
-import java.util.HashMap;
 
 public class Gm {
+	private static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(Gm.class);
 	// Public fields sort of configuration
 	public String savePath;
 	public static final int DefaultDisplayLimit=32;
 	public static final int DefaultDownloadDelay=3000;
 	private static final String agentString="Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.2.8) Gecko/20100722 Firefox/3.6.8 (.NET CLR 3.5.30729)";
 	private static final String MMagentString="Music Manager (1, 0, 24, 7712 - Windows)";
-	
+
 	public int delay;
 	public static int DisplayLimit;
 	public static boolean zero_fill;
-	
+
 	// Fields
 	private String token;
 	private boolean save;
 	// Generated fields
-	
+
 	public String initError;
-	
+
 	// Google music
 	// Authentication URLs
 	private static final String AUTH_URL = "https://www.google.com/accounts/ClientLogin";
@@ -43,15 +36,15 @@ public class Gm {
 	private static final String TOKEN_URL = "https://www.google.com/accounts/TokenAuth";
 	// Main url
 	private static final String BASE_URL = "https://play.google.com/music/";
-	
-	
+
+
 	private String auth;
 	private String sid;
 	private String lsid;
-	
-	
+
+
 	// Constructors
-	
+
 	public Gm(String name,String pwd) {
 		try {
 			initError=null;
@@ -68,7 +61,7 @@ public class Gm {
 			conn.setInstanceFollowRedirects(true);
 			conn.setRequestMethod("POST");
 			conn.setDoInput(true);
-			conn.setDoOutput(true);	
+			conn.setDoOutput(true);
 			conn.setRequestProperty("User-Agent",agentString);
 			// Construct data
 			String data="Email="+name+"&Passwd="+pwd+"&accountType=GOOGLE&service=sj";
@@ -90,7 +83,7 @@ public class Gm {
 			conn =(HttpsURLConnection)url.openConnection();
 			conn.setRequestMethod("POST");
 			conn.setDoInput(true);
-			conn.setDoOutput(true);	
+			conn.setDoOutput(true);
 			conn.setRequestProperty("User-Agent",MMagentString);
 			data="SID="+escape(sid)+"&LSID="+escape(lsid)+"&service=gaia";
 			page=doPost(conn,data);
@@ -101,7 +94,7 @@ public class Gm {
 			conn =(HttpsURLConnection)url.openConnection();
 			conn.setRequestMethod("GET");
 			conn.setDoInput(true);
-			conn.setDoOutput(true);	
+			conn.setDoOutput(true);
 			conn.setRequestProperty("User-Agent",MMagentString);
 			page=fetchPage(conn);
 			// finally get some more cookies
@@ -109,7 +102,7 @@ public class Gm {
 			conn =(HttpsURLConnection)url.openConnection();
 			conn.setRequestMethod("GET");
 			conn.setDoInput(true);
-			conn.setDoOutput(true);	
+			conn.setDoOutput(true);
 			conn.setRequestProperty("User-Agent",MMagentString);
 			}
 		catch (Exception e) {
@@ -117,44 +110,44 @@ public class Gm {
 			return ;
 		}
 	}
-	
+
 	private String escape(String str) {
 		try {
 			return URLEncoder.encode(str,"UTF-8");
 		} catch (Exception e) {
-			
+
 		}
 		return str;
-	} 
+	}
 
 	// JSON functions
-	
+
 	public String jsonString(String key,String val) {
 		return "\""+key+"\":\""+val+"\"";
 	}
-	
+
 	public String jsonBlock(String name,String data) {
 		return "\""+name+"\":{"+data+"}";
 	}
-	
+
 	private String deJsonify(String str) {
 		return str.replaceAll("\"","");
 	}
-	
+
 	public String jsonHeader(String param) {
 		return "json={"+param+"}";
 	}
-	
+
 	private String doPost(URLConnection connection,String q) {
 		try {
 		//Send request
-			
+
 				DataOutputStream wr = new DataOutputStream (
 						connection.getOutputStream());
 				wr.writeBytes(q);
 				wr.flush ();
 				wr.close ();
-			
+
 
       //Get Response
 		InputStream is = connection.getInputStream();
@@ -173,15 +166,15 @@ public class Gm {
 	    return "";
 	}
 	}
-	
+
 
 	// Used to get inital gws page to retrive session id
 	private String fetchPage(URLConnection connection) {
 		try {
 			connection.setRequestProperty("User-Agent",agentString);
 			connection.setDoInput(true);
-			connection.setDoOutput(true);	
-			
+			connection.setDoOutput(true);
+
 			//Send request
 			/*DataOutputStream wr = new DataOutputStream (
 					connection.getOutputStream ());
@@ -189,11 +182,11 @@ public class Gm {
 			wr.flush ();
 			wr.close ();*/
 
-	      //Get Response	
+	      //Get Response
 			InputStream is = connection.getInputStream();
 			BufferedReader rd = new BufferedReader(new InputStreamReader(is));
 			String line;
-			StringBuffer response = new StringBuffer(); 
+			StringBuffer response = new StringBuffer();
 			while((line = rd.readLine()) != null) {
 				response.append(line);
 				response.append('\r');
@@ -206,18 +199,18 @@ public class Gm {
 		    return "";
 		}
 	}
-	
+
 	// Convert the hash to a hex string
 	private static String toHex(byte[] bytes) {
 	    BigInteger bi = new BigInteger(1, bytes);
 	    return String.format("%0" + (bytes.length << 1) + "x", bi);
 	}
 
-	
-	public String request(String param,String method) {	
+
+	public String request(String param,String method) {
 		return request(param,method,"services/");
 	}
-	
+
 	public String request(String param,String method,String endpoint) {
 		try {
 			URL url=new URL(calcUrl(method,endpoint,param));
@@ -237,14 +230,14 @@ public class Gm {
 			return deJsonify(page);
 		}
 		catch (Exception e) {
-			PMS.debug("request page "+e);
+			LOGGER.debug("{GMusic} Request page exception: {}", e);
 			return "";
 		}
 	}
-	
-	public String getCookie(String cookie) {	
+
+	public String getCookie(String cookie) {
 		CookieManager manager=(CookieManager) CookieHandler.getDefault();
-		 CookieStore cookieJar =  manager.getCookieStore();	
+		 CookieStore cookieJar =  manager.getCookieStore();
         List <HttpCookie> cookies =
             cookieJar.getCookies();
         for(HttpCookie c : cookies)
@@ -252,7 +245,7 @@ public class Gm {
         		return c.getValue();
         return "";
 	}
-	
+
 	private String calcUrl(String method,String endpoint,String param) {
 		String xt;
 		if(method.equals("play"))
@@ -261,12 +254,12 @@ public class Gm {
 			xt="xt="+getCookie("xt");
 		return BASE_URL+endpoint+method+"?u=0&"+xt+(param.length()==0?"":"&"+param);
 	}
-	
+
 	private String ucFirst(String str) {
 		char first=str.charAt(0);
 		return String.valueOf(first).toUpperCase()+str.substring(1);
 	}
-	
+
 	public String search(String str) {
 		return search(str,"Songs");
 	}
@@ -274,7 +267,7 @@ public class Gm {
 		String param=jsonString("query",str)+","+jsonString("type",ucFirst(type));
 		return request(param,"getResultsFromSearch");
 	}
-	
+
 	public String tinySearch(String str) {
 		str=str.replace(' ', '+');
 		try {
@@ -288,11 +281,11 @@ public class Gm {
 			return "";
 		}
 	}
-	
+
 	public static String[] jsonSplit(String str) {
 		return str.split(",");
 	}
-	
+
 	public static String getField(String[] list,String field) {
 		for(int i=0;i<list.length;i++) {
 			String[] s=list[i].split(":");
@@ -302,19 +295,19 @@ public class Gm {
 		}
 		return "";
 	}
-	
+
 	private String decode(String s) {
 		//\u00e4
 		String x= s.replaceAll("\\u00e4", "ä").replaceAll("\\u00e5", "å").replaceAll("\\u00e6", "ö");
 		//debug("s "+s+" x "+x);
 		return x;
 	}
-	
+
 	// Other external functions
-	
+
 	public static String getField(Matcher m,String[] order,String field) {
 		for(int i=0;i<order.length;i++) {
-			if(order[i].compareTo(field)==0) { 
+			if(order[i].compareTo(field)==0) {
 				if(i+1>m.groupCount())
 					return "";
 				return m.group(i+1);
@@ -322,32 +315,32 @@ public class Gm {
 		}
 		return "";
 	}
-	
+
 	public void setPath(String path) {
 		this.savePath=path;
 	}
-	
+
 	public boolean saveSong() {
 		return save;
 	}
-	
+
 	public void setSave(boolean b) {
 		save=b;
 	}
-	
+
 	// Cover handling
 	public String cover(String dataURL) {
 		return "http:"+dataURL;
 	}
-	
+
 	public void error(String msg) {
-		PMS.minimal(msg);
+		LOGGER.error("{GMusic} {}", msg);
 	}
-	
+
 	public static boolean more(int i) {
 		return (Gm.DisplayLimit!=0)&&(i>Gm.DisplayLimit);
 	}
-	
+
 	public static void main(String args[]) {
 		int i;
 		Gm g =new Gm("","");
@@ -374,9 +367,9 @@ public class Gm {
 		String apage=g.request("", "loadalbums");
 		System.out.println("apage "+apage);
 		String rpage=g.request("", "loadartists");
-		System.out.println("rpage "+rpage);	
+		System.out.println("rpage "+rpage);
 		System.out.println("all done");
-		
+
 	}
-	
+
 }

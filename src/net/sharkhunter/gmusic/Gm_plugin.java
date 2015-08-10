@@ -1,25 +1,20 @@
 package net.sharkhunter.gmusic;
-import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-
-import net.pms.Messages;
 import net.pms.PMS;
 import net.pms.configuration.Build;
 import net.pms.dlna.DLNAResource;
 import net.pms.external.AdditionalFolderAtRoot;
-
 import javax.swing.*;
-
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.LoggerFactory;
 
 public class Gm_plugin implements AdditionalFolderAtRoot {
 
+	private static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(Gm_plugin.class);
 	private GmRoot gmRoot;
 
 	public Gm_plugin() {
@@ -29,7 +24,7 @@ public class Gm_plugin implements AdditionalFolderAtRoot {
 			gmRoot.init();
 		}
 		catch (Exception e) {
-			PMS.debug("exp "+e)	;
+			LOGGER.debug("{GMusic} Exception: {}", e);
 		}
 	}
 
@@ -48,7 +43,7 @@ public class Gm_plugin implements AdditionalFolderAtRoot {
 	public JComponent config() {
 		return null;
 	}
-	
+
 	private static void writeCred(String path) throws IOException {
 		File f=new File(path);
 		BufferedWriter wr=new BufferedWriter(new FileWriter(f,true));
@@ -57,7 +52,7 @@ public class Gm_plugin implements AdditionalFolderAtRoot {
 		wr.flush();
 		wr.close();
 	}
-	
+
 	public static void postInstall() {
 		String cPath=GmRoot.credPath();
 		if(StringUtils.isEmpty(cPath)) {
